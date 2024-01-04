@@ -207,19 +207,13 @@ func RunGoTestsInVM(t testing.TB, pkgs []string, opts ...GoTestOpt) {
 	qemuFns := []qemu.Fn{
 		qemu.P9Directory(sharedDir, "gotests"),
 	}
-	goCov := os.Getenv("GOCOVERDIR")
-	if goCov != "" {
-		qemuFns = append(qemuFns,
-			qemu.P9Directory(goCov, "gocov"),
-			qemu.WithAppendKernel("VMTEST_GOCOVERDIR=gocov"),
-		)
-	}
 	// Create the initramfs and start the VM.
 	vm := StartVM(t, append(
 		[]Opt{
 			WithMergedInitramfs(initramfs),
 			WithQEMUFn(qemuFns...),
 			CollectKernelCoverage(),
+			ShareGOCOVERDIR(),
 		}, goOpts.VMOpts...)...)
 
 	if _, err := vm.Console.ExpectString("TESTS PASSED MARKER"); err != nil {
